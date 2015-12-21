@@ -1,0 +1,22 @@
+{
+    "bridge": {
+        "name": "HomebridgePI",
+        "username": "CD:22:3D:E3:CE:30",
+        "port": 51826,
+        "pin": "031-45-156"
+    },
+    
+    "description": "The Onion!",
+
+    "platforms": [],
+
+    "accessories": [
+        {
+            "accessory": "HttpTempHum",
+            "name": "Living Room Weather",
+            "url": "http://192.168.1.210/",
+            "sendimmediately": "",
+            "http_method": "GET",
+        }
+    ]
+}
