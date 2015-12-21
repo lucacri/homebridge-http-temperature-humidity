@@ -1,7 +1,7 @@
 {
-  "name": "homebridge-http",
-  "version": "0.0.4",
-  "description": "https plugin for homebridge: https://github.com/nfarina/homebridge",
+  "name": "homebridge-http-temperature-humidity",
+  "version": "0.0.1",
+  "description": "https plugin for homebridge",
   "license": "ISC",
   "keywords": [
     "homebridge-plugin"
@@ -11,7 +11,7 @@
     "homebridge": ">=0.2.0"
   },
   "author": {
-    "name": "Adrian Rudman"
+    "name": "Luca Critelli"
   },
   "repository": {
     "type": "git",
