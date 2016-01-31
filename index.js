@@ -58,7 +58,7 @@ HttpTemphum.prototype = {
 
             this.log(res.body);
             this.log(info);
-            this.temperature = info.temperature;
+            this.temperature = Number( info.temperature );
 			callback(null, this.temperature);
 		}
 
@@ -80,6 +80,10 @@ HttpTemphum.prototype = {
         temperatureService = new Service.TemperatureSensor(this.name);
         temperatureService
                 .getCharacteristic(Characteristic.CurrentTemperature)
+                .setProps({
+                    minValue: -100,
+                    value: 10
+                })
                 .on('get', this.getState.bind(this));
 
         humidityService = new Service.HumiditySensor(this.name);
