@@ -18,7 +18,7 @@ Configuration sample:
 "accessories": [
         "accessories": [
         {
-            "accessory": "HttpTempHum",
+            "accessory": "HttpTemphum",
             "name": "Living Room Weather",
             "url": "http://192.168.1.210/weather",
             "sendimmediately": "",
