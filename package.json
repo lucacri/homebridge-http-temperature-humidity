@@ -1,6 +1,6 @@
 {
   "name": "homebridge-httptemperaturehumidity",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "https plugin for homebridge",
   "license": "ISC",
   "keywords": [
