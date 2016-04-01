@@ -27,3 +27,12 @@ Configuration sample:
     ]
 
 ```
+
+
+The /weather endpoing will return a json looking like this
+```
+{
+	"temperature": 25.8,
+	"humidity": 38
+}
+```

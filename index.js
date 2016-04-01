@@ -47,17 +47,17 @@ HttpTemphum.prototype = {
 
 		var res = request(this.http_method, this.url, {});
 		if(res.statusCode > 400){
-			this.log('HTTP power function failed');
+			// this.log('HTTP power function failed');
 			callback(error);
 		}else{
-			this.log('HTTP power function succeeded!');
+			// this.log('HTTP power function succeeded!');
             var info = JSON.parse(res.body);
 
             temperatureService.setCharacteristic(Characteristic.CurrentTemperature, info.temperature);
             humidityService.setCharacteristic(Characteristic.CurrentRelativeHumidity, info.humidity);
 
-            this.log(res.body);
-            this.log(info);
+            // this.log(res.body);
+            // this.log(info);
             this.temperature = Number( info.temperature );
 			callback(null, this.temperature);
 		}
