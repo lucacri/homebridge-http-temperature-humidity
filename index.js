@@ -59,6 +59,7 @@ HttpTemphum.prototype = {
             this.log(res.body);
             this.log(info);
             this.temperature = Number( info.temperature );
+            this.humidity = Number( info.humidity );
 			callback(null, this.temperature);
 		}
 
