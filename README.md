@@ -11,8 +11,7 @@ Supports https devices on HomeBridge Platform
 # Configuration
 
 
-
-Configuration sample:
+Configuration sample file:
 
  ```
 "accessories": [
@@ -29,10 +28,13 @@ Configuration sample:
 ```
 
 
-The /weather endpoing will return a json looking like this
+The /weather endpoint will return a json looking like this
 ```
 {
 	"temperature": 25.8,
 	"humidity": 38
 }
 ```
+
+
+This plugin acts as an interface between a web endpoint and homebridge only. You will still need some dedicated hardware to expose the web endpoints with the temperature and humidity information. In my case, I used a simple NodeMCU board and a DHT11 (or DHT22).
