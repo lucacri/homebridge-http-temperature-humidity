@@ -19,9 +19,12 @@ function HttpTemphum(log, config) {
 
     // url info
     this.url = config["url"];
-    this.http_method = config["http_method"];
-    this.sendimmediately = config["sendimmediately"];
+    this.http_method = config["http_method"] || "GET";
+    this.sendimmediately = config["sendimmediately"] || "";
     this.name = config["name"];
+    this.manufacturer = config["manufacturer"] || "Luca Manufacturer";
+    this.model = config["model"] || "Luca Model";
+    this.serial = config["serial"] || "Luca Serial";
 }
 
 HttpTemphum.prototype = {
@@ -39,30 +42,31 @@ HttpTemphum.prototype = {
     },
 
     getStateHumidity: function(callback){    
-		callback(null, this.humidity);
+	callback(null, this.humidity);
     },
 
     getState: function (callback) {
         var body;
 
-		var res = request(this.http_method, this.url, {});
-		if(res.statusCode > 400){
-			// this.log('HTTP power function failed');
-			callback(error);
-		}else{
-			// this.log('HTTP power function succeeded!');
-            var info = JSON.parse(res.body);
+	var res = request(this.http_method, this.url, {});
+	if(res.statusCode > 400){
+	  this.log('HTTP power function failed');
+	  callback(error);
+	} else {
+	  this.log('HTTP power function succeeded!');
+          var info = JSON.parse(res.body);
 
-            temperatureService.setCharacteristic(Characteristic.CurrentTemperature, info.temperature);
-            humidityService.setCharacteristic(Characteristic.CurrentRelativeHumidity, info.humidity);
+          temperatureService.setCharacteristic(Characteristic.CurrentTemperature, info.temperature);
+          humidityService.setCharacteristic(Characteristic.CurrentRelativeHumidity, info.humidity);
 
-            // this.log(res.body);
-            // this.log(info);
-            this.temperature = Number( info.temperature );
-            this.humidity = Number( info.humidity );
-			callback(null, this.temperature);
-		}
+          this.log(res.body);
+          this.log(info);
 
+          this.temperature = info.temperature;
+          this.humidity = info.humidity;
+
+	  callback(null, this.temperature);
+	}
     },
 
     identify: function (callback) {
@@ -72,19 +76,14 @@ HttpTemphum.prototype = {
 
     getServices: function () {
         var informationService = new Service.AccessoryInformation();
-
         informationService
-                .setCharacteristic(Characteristic.Manufacturer, "Luca Manufacturer")
-                .setCharacteristic(Characteristic.Model, "Luca Model")
-                .setCharacteristic(Characteristic.SerialNumber, "Luca Serial Number");
+                .setCharacteristic(Characteristic.Manufacturer, this.manufacturer)
+                .setCharacteristic(Characteristic.Model, this.model)
+                .setCharacteristic(Characteristic.SerialNumber, this.serial);
 
         temperatureService = new Service.TemperatureSensor(this.name);
         temperatureService
                 .getCharacteristic(Characteristic.CurrentTemperature)
-                .setProps({
-                    minValue: -100,
-                    value: 10
-                })
                 .on('get', this.getState.bind(this));
 
         humidityService = new Service.HumiditySensor(this.name);
@@ -92,6 +91,6 @@ HttpTemphum.prototype = {
                 .getCharacteristic(Characteristic.CurrentRelativeHumidity)
                 .on('get', this.getStateHumidity.bind(this));
 
-        return [temperatureService, humidityService];
+        return [informationService, temperatureService, humidityService];
     }
 };
