@@ -1,21 +1,23 @@
 {
-  "name": "homebridge-httptemperaturehumidity",
-  "version": "0.0.14",
+  "name": "homebridge-http-humidity",
+  "version": "0.0.1",
   "description": "https plugin for homebridge",
   "license": "ISC",
   "keywords": [
-    "homebridge-plugin"
+    "homebridge-plugin",
+    "http",
+    "humidity sensor"
   ],
   "engines": {
     "node": ">=0.12.0",
     "homebridge": ">=0.2.0"
   },
   "author": {
-    "name": "Luca Critelli"
+    "name": "@metbosch"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/lucacri/homebridge-http-temperature-humidity.git"
+    "url": "git://github.com/metbosch/homebridge-http-humidity.git"
   },
   "dependencies": {
     "sync-request": "^2.1.0"
