@@ -3,7 +3,7 @@ var request = require('sync-request');
 
 var temperatureService;
 var humidityService;
-var url 
+var url
 var humidity = 0;
 var temperature = 0;
 
@@ -42,7 +42,7 @@ HttpTemphum.prototype = {
                 })
     },
 
-    getStateHumidity: function(callback){    
+    getStateHumidity: function(callback){
 	callback(null, this.humidity);
     },
 
@@ -80,7 +80,7 @@ HttpTemphum.prototype = {
     getServices: function () {
         var services = [],
             informationService = new Service.AccessoryInformation();
-            
+
         informationService
                 .setCharacteristic(Characteristic.Manufacturer, this.manufacturer)
                 .setCharacteristic(Characteristic.Model, this.model)
@@ -92,11 +92,12 @@ HttpTemphum.prototype = {
                 .getCharacteristic(Characteristic.CurrentTemperature)
                 .on('get', this.getState.bind(this));
         services.push(temperatureService);
-        
+
         if(this.humidity !== false){
           humidityService = new Service.HumiditySensor(this.name);
           humidityService
                   .getCharacteristic(Characteristic.CurrentRelativeHumidity)
+                  .setProps({minValue: -100, maxValue: 100})
                   .on('get', this.getStateHumidity.bind(this));
           services.push(humidityService);
         }
