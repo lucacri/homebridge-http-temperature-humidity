@@ -5,7 +5,7 @@
         "port": 51826,
         "pin": "031-45-156"
     },
-    
+
     "description": "The Onion!",
 
     "platforms": [],
@@ -15,8 +15,9 @@
             "accessory": "HttpTemphum",
             "name": "Living Room Weather",
             "url": "http://192.168.1.210/weather",
-            "http_method": "GET",
-            "humidity": true
+            "httpMethod": "GET",
+            "humidity": true,
+            "cacheExpiration": 60
         }
     ]
 }
