@@ -3,7 +3,7 @@ var request = require('sync-request');
 
 var temperatureService;
 var humidityService;
-var url 
+var url
 var humidity = 0;
 var temperature = 0;
 
@@ -25,6 +25,7 @@ function HttpTemphum(log, config) {
     this.manufacturer = config["manufacturer"] || "Luca Manufacturer";
     this.model = config["model"] || "Luca Model";
     this.serial = config["serial"] || "Luca Serial";
+    this.humidity = config["humidity"];
 }
 
 HttpTemphum.prototype = {
@@ -41,7 +42,7 @@ HttpTemphum.prototype = {
                 })
     },
 
-    getStateHumidity: function(callback){    
+    getStateHumidity: function(callback){
 	callback(null, this.humidity);
     },
 
@@ -57,13 +58,15 @@ HttpTemphum.prototype = {
           var info = JSON.parse(res.body);
 
           temperatureService.setCharacteristic(Characteristic.CurrentTemperature, info.temperature);
-          humidityService.setCharacteristic(Characteristic.CurrentRelativeHumidity, info.humidity);
+          if(this.humidity !== false)
+            humidityService.setCharacteristic(Characteristic.CurrentRelativeHumidity, info.humidity);
 
           this.log(res.body);
           this.log(info);
 
           this.temperature = info.temperature;
-          this.humidity = info.humidity;
+          if(this.humidity !== false)
+            this.humidity = info.humidity;
 
 	  callback(null, this.temperature);
 	}
@@ -75,22 +78,30 @@ HttpTemphum.prototype = {
     },
 
     getServices: function () {
-        var informationService = new Service.AccessoryInformation();
+        var services = [],
+            informationService = new Service.AccessoryInformation();
+
         informationService
                 .setCharacteristic(Characteristic.Manufacturer, this.manufacturer)
                 .setCharacteristic(Characteristic.Model, this.model)
                 .setCharacteristic(Characteristic.SerialNumber, this.serial);
+        services.push(informationService);
 
         temperatureService = new Service.TemperatureSensor(this.name);
         temperatureService
                 .getCharacteristic(Characteristic.CurrentTemperature)
                 .on('get', this.getState.bind(this));
+        services.push(temperatureService);
 
-        humidityService = new Service.HumiditySensor(this.name);
-        humidityService
-                .getCharacteristic(Characteristic.CurrentRelativeHumidity)
-                .on('get', this.getStateHumidity.bind(this));
+        if(this.humidity !== false){
+          humidityService = new Service.HumiditySensor(this.name);
+          humidityService
+                  .getCharacteristic(Characteristic.CurrentRelativeHumidity)
+                  .setProps({minValue: -100, maxValue: 100})
+                  .on('get', this.getStateHumidity.bind(this));
+          services.push(humidityService);
+        }
 
-        return [informationService, temperatureService, humidityService];
+        return services;
     }
 };

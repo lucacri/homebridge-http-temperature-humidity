@@ -15,7 +15,8 @@
             "accessory": "HttpTemphum",
             "name": "Living Room Weather",
             "url": "http://192.168.1.210/weather",
-            "http_method": "GET"
+            "http_method": "GET",
+            "humidity": true
         }
     ]
 }
