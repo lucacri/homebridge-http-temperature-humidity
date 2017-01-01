@@ -18,6 +18,8 @@
     "url": "git://github.com/lucacri/homebridge-http-temperature-humidity.git"
   },
   "dependencies": {
-    "sync-request": "^2.1.0"
+    "cache-service-cache-module": "^1.2.4",
+    "superagent": "^3.3.1",
+    "superagent-cache-plugin": "^1.0.0"
   }
 }
