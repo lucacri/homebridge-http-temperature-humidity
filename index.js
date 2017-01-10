@@ -1,5 +1,7 @@
 var Service, Characteristic;
-var request = require('sync-request');
+var request = require('request');
+
+const DEF_TIMEOUT = 5000;
 
 module.exports = function (homebridge) {
    Service = homebridge.hap.Service;
@@ -18,49 +20,37 @@ function HttpHumidity(log, config) {
    this.manufacturer = config["manufacturer"] || "@metbosch manufacturer";
    this.model = config["model"] || "Model not available";
    this.serial = config["serial"] || "Non-defined serial";
+   this.timeout = config["timeout"] || DEF_TIMEOUT;
 }
 
 HttpHumidity.prototype = {
 
-   httpRequest: function (url, body, method, username, password, sendimmediately, callback) {
-      cons
-      request({
-         url: url,
-         body: body,
-         method: method,
-         rejectUnauthorized: false
-      },
-      function (error, response, body) {
-         callback(error, response, body)
-      })
-   },
-
    getState: function (callback) {
-      var body;
-
-      var res = request(this.http_method, this.url, {});
-      if(res.statusCode > 400){
-         this.log('HTTP get state function failed');
-         callback(error);
-      } else {
-         this.log('HTTP get state function succeeded!');
-         var info = JSON.parse(res.body);
-
-         this.humidityService.setCharacteristic(
-            Characteristic.CurrentRelativeHumidity,
-            info.humidity
-         );
-         this.log(info);
-
-         this.humidity = info.humidity;
-
-         callback(null, this.humidity);
-      }
-   },
-
-   identify: function (callback) {
-      this.log("Identify requested!");
-      callback(); // success
+      var ops = {
+         uri:     this.url,
+         method:  this.http_method,
+         timeout: this.timeout
+      };
+      this.log('Requesting humidity on "' + ops.uri + '", method ' + ops.method);
+      request(ops, (error, res, body) => {
+         var value = null;
+         if (error) {
+            this.log('HTTP bad response (' + ops.uri + '): ' + error.message);
+         } else {
+            try {
+               value = JSON.parse(body).humidity;
+               if (value < 0 || value > 100 || isNaN(value)) {
+                  var errString = "Invalid value received (" + value + ")";
+                  throw errString;
+               }
+               this.log('HTTP successful response: ' + body);
+            } catch (parseErr) {
+               this.log('Error processing received information: ' + parseErr.message);
+               error = parseErr;
+            }
+         }
+         callback(error, value);
+      });
    },
 
    getServices: function () {
