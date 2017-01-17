@@ -50,9 +50,13 @@ HttpTemphum.prototype = {
         var body;
 
 	var res = request(this.http_method, this.url, {});
-	if(res.statusCode > 400){
+	if(res.statusCode > 300){
 	  this.log('HTTP power function failed');
-	  callback(error);
+    var err = new Error('Server responded with status code ' + res.statusCode);
+    err.statusCode = res.statusCode;
+    err.headers = res.headers;
+    err.body = res.body;
+    callback(err);
 	} else {
 	  this.log('HTTP power function succeeded!');
           var info = JSON.parse(res.body);
