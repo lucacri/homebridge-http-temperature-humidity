@@ -1,6 +1,6 @@
 {
   "name": "homebridge-http-humidity",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "https plugin for homebridge",
   "license": "ISC",
   "keywords": [
