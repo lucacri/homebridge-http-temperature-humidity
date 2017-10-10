@@ -1,11 +1,12 @@
 var Service, Characteristic;
-var request = require('sync-request');
+var request = require("superagent");
 
-var temperatureService;
-var humidityService;
-var url
-var humidity = 0;
-var temperature = 0;
+// Require and instantiate a cache module
+var cacheModule = require("cache-service-cache-module");
+var cache = new cacheModule({storage: "session", defaultExpiration: 60});
+
+// Require superagent-cache-plugin and pass your cache module
+var superagentCache = require("superagent-cache-plugin")(cache);
 
 module.exports = function (homebridge) {
     Service = homebridge.hap.Service;
@@ -13,68 +14,72 @@ module.exports = function (homebridge) {
     homebridge.registerAccessory("homebridge-httptemperaturehumidity", "HttpTemphum", HttpTemphum);
 }
 
-
 function HttpTemphum(log, config) {
     this.log = log;
 
-    // url info
-    this.url = config["url"];
-    this.http_method = config["http_method"] || "GET";
-    this.sendimmediately = config["sendimmediately"] || "";
-    this.name = config["name"];
-    this.manufacturer = config["manufacturer"] || "Luca Manufacturer";
-    this.model = config["model"] || "Luca Model";
-    this.serial = config["serial"] || "Luca Serial";
-    this.humidity = config["humidity"];
+    // Configuration
+    this.url             = config["url"];
+    this.httpMethod      = config["httpMethod"] || "GET";
+    this.name            = config["name"];
+    this.manufacturer    = config["manufacturer"] || "Generic";
+    this.model           = config["model"] || "HTTP(S)";
+    this.serial          = config["serial"] || "";
+    this.humidity        = config["humidity"];
+    this.lastUpdateAt    = config["lastUpdateAt"] || null;
+    this.cacheExpiration = config["cacheExpiration"] || 60;
 }
 
 HttpTemphum.prototype = {
 
-    httpRequest: function (url, body, method, username, password, sendimmediately, callback) {
-        request({
-                    url: url,
-                    body: body,
-                    method: method,
-                    rejectUnauthorized: false
-                },
-                function (error, response, body) {
-                    callback(error, response, body)
-                })
+    getRemoteState: function(service, callback) {
+        request(this.httpMethod, this.url)
+          .set("Accept", "application/json")
+          .use(superagentCache)
+          .expiration(this.cacheExpiration)
+          .end(function(err, res, key) {
+            if (err) {
+                this.log(`HTTP failure (${this.url})`);
+                callback(err);
+            } else {
+                this.log(`HTTP success (${key})`);
+
+                this.temperatureService.setCharacteristic(
+                    Characteristic.CurrentTemperature,
+                    res.body.temperature
+                );
+                this.temperature = res.body.temperature;
+
+                if (this.humidity !== false) {
+                    this.humidityService.setCharacteristic(
+                        Characteristic.CurrentRelativeHumidity,
+                        res.body.humidity
+                    );
+                    this.humidity = res.body.humidity;
+                }
+
+                this.lastUpdateAt = +Date.now();
+
+                switch (service) {
+                    case "temperature":
+                        callback(null, this.temperature);
+                        break;
+                    case "humidity":
+                        callback(null, this.humidity);
+                        break;
+                    default:
+                        var error = new Error("Unknown service: " + service);
+                        callback(error);
+                }
+            }
+        }.bind(this));
     },
 
-    getStateHumidity: function(callback){
-	callback(null, this.humidity);
+    getTemperatureState: function(callback) {
+        this.getRemoteState("temperature", callback);
     },
 
-    getState: function (callback) {
-        var body;
-
-	var res = request(this.http_method, this.url, {});
-	if(res.statusCode > 400){
-	  this.log('HTTP power function failed');
-	  callback(error);
-	} else {
-	  this.log('HTTP power function succeeded!');
-          var info = JSON.parse(res.body);
-
-          temperatureService.setCharacteristic(Characteristic.CurrentTemperature, info.temperature);
-          if(this.humidity !== false)
-            humidityService.setCharacteristic(Characteristic.CurrentRelativeHumidity, info.humidity);
-
-          this.log(res.body);
-          this.log(info);
-
-          this.temperature = info.temperature;
-          if(this.humidity !== false)
-            this.humidity = info.humidity;
-
-	  callback(null, this.temperature);
-	}
-    },
-
-    identify: function (callback) {
-        this.log("Identify requested!");
-        callback(); // success
+    getHumidityState: function(callback) {
+        this.getRemoteState("humidity", callback);
     },
 
     getServices: function () {
@@ -82,24 +87,25 @@ HttpTemphum.prototype = {
             informationService = new Service.AccessoryInformation();
 
         informationService
-                .setCharacteristic(Characteristic.Manufacturer, this.manufacturer)
-                .setCharacteristic(Characteristic.Model, this.model)
-                .setCharacteristic(Characteristic.SerialNumber, this.serial);
+            .setCharacteristic(Characteristic.Manufacturer, this.manufacturer)
+            .setCharacteristic(Characteristic.Model, this.model)
+            .setCharacteristic(Characteristic.SerialNumber, this.serial);
         services.push(informationService);
 
-        temperatureService = new Service.TemperatureSensor(this.name);
-        temperatureService
-                .getCharacteristic(Characteristic.CurrentTemperature)
-                .on('get', this.getState.bind(this));
-        services.push(temperatureService);
+        this.temperatureService = new Service.TemperatureSensor(this.name);
+        this.temperatureService
+            .getCharacteristic(Characteristic.CurrentTemperature)
+            .setProps({ minValue: -273, maxValue: 200 })
+            .on("get", this.getTemperatureState.bind(this));
+        services.push(this.temperatureService);
 
-        if(this.humidity !== false){
-          humidityService = new Service.HumiditySensor(this.name);
-          humidityService
-                  .getCharacteristic(Characteristic.CurrentRelativeHumidity)
-                  .setProps({minValue: -100, maxValue: 100})
-                  .on('get', this.getStateHumidity.bind(this));
-          services.push(humidityService);
+        if (this.humidity !== false) {
+            this.humidityService = new Service.HumiditySensor(this.name);
+            this.humidityService
+                .getCharacteristic(Characteristic.CurrentRelativeHumidity)
+                .setProps({ minValue: 0, maxValue: 200 })
+                .on("get", this.getHumidityState.bind(this));
+            services.push(this.humidityService);
         }
 
         return services;
