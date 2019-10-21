@@ -5,18 +5,14 @@
         "port": 51826,
         "pin": "031-45-156"
     },
-
     "description": "The Onion!",
-
     "platforms": [],
-
     "accessories": [
         {
-            "accessory": "HttpTemphum",
-            "name": "Living Room Weather",
-            "url": "http://192.168.1.210/weather",
+            "accessory": "HttpWaterlevel",
+            "name": "Water Tank",
+            "url": "http://192.168.1.210/waterlevel",
             "httpMethod": "GET",
-            "humidity": true,
             "cacheExpiration": 60
         }
     ]

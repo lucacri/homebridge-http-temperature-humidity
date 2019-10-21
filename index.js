@@ -11,10 +11,10 @@ var superagentCache = require("superagent-cache-plugin")(cache);
 module.exports = function (homebridge) {
     Service = homebridge.hap.Service;
     Characteristic = homebridge.hap.Characteristic;
-    homebridge.registerAccessory("homebridge-httptemperaturehumidity", "HttpTemphum", HttpTemphum);
+    homebridge.registerAccessory("homebridge-httpwaterlevel", "HttpWaterlevel", HttpWaterlevel);
 }
 
-function HttpTemphum(log, config) {
+function HttpWaterlevel(log, config) {
     this.log = log;
 
     // Configuration
@@ -24,12 +24,11 @@ function HttpTemphum(log, config) {
     this.manufacturer    = config["manufacturer"] || "Generic";
     this.model           = config["model"] || "HTTP(S)";
     this.serial          = config["serial"] || "";
-    this.humidity        = config["humidity"];
     this.lastUpdateAt    = config["lastUpdateAt"] || null;
     this.cacheExpiration = config["cacheExpiration"] || 60;
 }
 
-HttpTemphum.prototype = {
+HttpWaterlevel.prototype = {
 
     getRemoteState: function(service, callback) {
         request(this.httpMethod, this.url)
@@ -43,28 +42,17 @@ HttpTemphum.prototype = {
             } else {
                 this.log(`HTTP success (${key})`);
 
-                this.temperatureService.setCharacteristic(
-                    Characteristic.CurrentTemperature,
-                    res.body.temperature
+                this.waterlevelService.setCharacteristic(
+                    Characteristic.WaterLevel,
+                    res.body.waterlevel
                 );
-                this.temperature = res.body.temperature;
-
-                if (this.humidity !== false) {
-                    this.humidityService.setCharacteristic(
-                        Characteristic.CurrentRelativeHumidity,
-                        res.body.humidity
-                    );
-                    this.humidity = res.body.humidity;
-                }
+                this.waterlevel = res.body.waterlevel;
 
                 this.lastUpdateAt = +Date.now();
 
                 switch (service) {
-                    case "temperature":
-                        callback(null, this.temperature);
-                        break;
-                    case "humidity":
-                        callback(null, this.humidity);
+                    case "waterlevel":
+                        callback(null, this.waterlevel);
                         break;
                     default:
                         var error = new Error("Unknown service: " + service);
@@ -74,12 +62,8 @@ HttpTemphum.prototype = {
         }.bind(this));
     },
 
-    getTemperatureState: function(callback) {
-        this.getRemoteState("temperature", callback);
-    },
-
-    getHumidityState: function(callback) {
-        this.getRemoteState("humidity", callback);
+    getWaterlevelState: function(callback) {
+        this.getRemoteState("waterlevel", callback);
     },
 
     getServices: function () {
@@ -92,21 +76,12 @@ HttpTemphum.prototype = {
             .setCharacteristic(Characteristic.SerialNumber, this.serial);
         services.push(informationService);
 
-        this.temperatureService = new Service.TemperatureSensor(this.name);
-        this.temperatureService
-            .getCharacteristic(Characteristic.CurrentTemperature)
-            .setProps({ minValue: -273, maxValue: 200 })
-            .on("get", this.getTemperatureState.bind(this));
-        services.push(this.temperatureService);
-
-        if (this.humidity !== false) {
-            this.humidityService = new Service.HumiditySensor(this.name);
-            this.humidityService
-                .getCharacteristic(Characteristic.CurrentRelativeHumidity)
-                .setProps({ minValue: 0, maxValue: 100 })
-                .on("get", this.getHumidityState.bind(this));
-            services.push(this.humidityService);
-        }
+        this.waterlevelService = new Service.LeakSensor(this.name);
+        this.waterlevelService
+            .getCharacteristic(Characteristic.WaterLevel)
+            .setProps({ minValue: 0, maxValue: 100 })
+            .on("get", this.getWaterlevelState.bind(this));
+        services.push(this.waterlevelService);
 
         return services;
     }
