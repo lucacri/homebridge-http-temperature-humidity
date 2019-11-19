@@ -48,11 +48,20 @@ HttpWaterlevel.prototype = {
                 );
                 this.waterlevel = res.body.waterlevel;
 
+                this.leakSensorService.setCharacteristic(
+                    Characteristic.LeakDetected,
+                    res.body.leak
+                );
+                this.waterlevel = res.body.leak;
+
                 this.lastUpdateAt = +Date.now();
 
                 switch (service) {
                     case "waterlevel":
                         callback(null, this.waterlevel);
+                        break;
+                    case "leak":
+                        callback(null, this.leak);
                         break;
                     default:
                         var error = new Error("Unknown service: " + service);
@@ -64,6 +73,10 @@ HttpWaterlevel.prototype = {
 
     getWaterlevelState: function(callback) {
         this.getRemoteState("waterlevel", callback);
+    },
+
+    getWaterlevelState: function(callback) {
+        this.getRemoteState("leak", callback);
     },
 
     getServices: function () {
@@ -82,6 +95,12 @@ HttpWaterlevel.prototype = {
             .setProps({ minValue: 0, maxValue: 100 })
             .on("get", this.getWaterlevelState.bind(this));
         services.push(this.waterlevelService);
+
+        this.leakSensorService
+            .getCharacteristic(Characteristic.LeakSensor)
+            .setProps({ minValue: 0, maxValue: 100 })
+            .on("get", this.getLeakSensorState.bind(this));
+        services.push(this.leakSensorService);
 
         return services;
     }
