@@ -42,7 +42,7 @@ HttpTemphum.prototype = {
                 callback(err);
             } else {
                 this.log(`HTTP success (${key})`);
-
+                this.log(res.body);
                 this.temperatureService.setCharacteristic(
                     Characteristic.CurrentTemperature,
                     res.body.temperature
