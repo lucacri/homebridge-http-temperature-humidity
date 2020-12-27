@@ -1,6 +1,6 @@
 {
-  "name": "homebridge-httptemperaturehumidity",
-  "version": "0.0.17",
+  "name": "homebridge-httpwaterlevel",
+  "version": "0.0.18",
   "description": "https plugin for homebridge",
   "license": "ISC",
   "keywords": [
@@ -11,11 +11,11 @@
     "homebridge": ">=0.2.0"
   },
   "author": {
-    "name": "Luca Critelli"
+    "name": "David Trebicky"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/lucacri/homebridge-http-temperature-humidity.git"
+    "url": "git://github.com/trebidav/homebridge-http-waterlevel.git"
   },
   "dependencies": {
     "cache-service-cache-module": "^1.2.4",
