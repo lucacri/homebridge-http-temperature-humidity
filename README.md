@@ -23,7 +23,8 @@ The available fields in the config.json file are:
  - `field_name` [Optional] Field that will be used from the JSON response of the endpoint. Alternatively, if the `field_name` contains an empty string (`"field_name": ""`), the expected response is directly the current humidity value (Default: humidity).
  - `timeout` [Optional] Waiting time for the endpoint response before fail (Default: 5000ms).
  - `auth` [Optional] JSON with `user` and `pass` fields used to authenticate the request into the device.
- - `update_interval` [Optional] If not zero, the field defines the polling period in miliseconds for the sensor state (Default is 120000ms). When the value is zero, the state is only updated when homebridge requests the current value.
+ - `update_interval` [Optional] If not zero, the field defines the polling period in milliseconds for the sensor state (Default is 120000ms). When the value is zero, the state is only updated when homebridge requests the current value.
+ - `debug` [Optional] Enable/disable debug logs (Default: false).
 
 
 Example:

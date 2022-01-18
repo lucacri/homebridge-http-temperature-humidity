@@ -14,7 +14,6 @@ module.exports = function (homebridge) {
 function HttpHumidity(log, config) {
    this.log = log;
 
-   // url info
    this.url = config["url"];
    this.http_method = config["http_method"] || "GET";
    this.name = config["name"];
@@ -25,6 +24,7 @@ function HttpHumidity(log, config) {
    this.timeout = config["timeout"] || DEF_TIMEOUT;
    this.auth = config["auth"];
    this.update_interval = Number( config["update_interval"] || DEF_INTERVAL );
+   this.debug = config["debug"] || false;
 
    // Internal variables
    this.last_value = null;
@@ -33,10 +33,16 @@ function HttpHumidity(log, config) {
 
 HttpHumidity.prototype = {
 
+   logDebug: function (str) {
+      if (this.debug) {
+         this.log(str)
+      }
+   },
+
    updateState: function () {
       //Ensure previous call finished
       if (this.waiting_response) {
-         this.log('Avoid updateState as previous response does not arrived yet');
+         this.logDebug('Avoid updateState as previous response does not arrived yet');
          return;
       }
       this.waiting_response = true;
@@ -46,7 +52,7 @@ HttpHumidity.prototype = {
             method: this.http_method,
             timeout: this.timeout
          };
-         this.log('Requesting humidity on "' + ops.uri + '", method ' + ops.method);
+         this.logDebug('Requesting humidity on "' + ops.uri + '", method ' + ops.method);
          if (this.auth) {
             ops.auth = {
                user: this.auth.user,
@@ -64,16 +70,16 @@ HttpHumidity.prototype = {
                   if (value < 0 || value > 100 || isNaN(value)) {
                      throw new Error("Invalid value received");
                   }
-                  this.log('HTTP successful response: ' + value);
+                  this.logDebug('HTTP successful response: ' + value);
                } catch (parseErr) {
-                  this.log('Error processing received information: ' + parseErr.message);
+                  this.logDebug('Error processing received information: ' + parseErr.message);
                   error = parseErr;
                }
             }
             if (!error) {
-                resolve(value);
+               resolve(value);
             } else {
-                reject(error);
+               reject(error);
             }
             this.waiting_response = false;
          });
@@ -88,7 +94,7 @@ HttpHumidity.prototype = {
    },
 
    getState: function (callback) {
-      this.log('Call to getState: waiting_response is "' + this.waiting_response + '"' );
+      this.logDebug('Call to getState: waiting_response is "' + this.waiting_response + '"' );
       this.updateState(); //This sets the promise in last_value
       this.last_value.then((value) => {
          callback(null, value);

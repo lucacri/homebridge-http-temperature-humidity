@@ -1,6 +1,6 @@
 {
   "name": "homebridge-http-humidity",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "https plugin for homebridge",
   "license": "ISC",
   "keywords": [
@@ -20,6 +20,6 @@
     "url": "git://github.com/metbosch/homebridge-http-humidity.git"
   },
   "dependencies": {
-    "request": "^2.1.0"
+    "request": "^2.5.0"
   }
 }
